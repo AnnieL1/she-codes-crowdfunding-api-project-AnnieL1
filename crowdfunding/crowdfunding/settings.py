@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'projects.apps.ProjectsConfig',  #is ProjectsConfig a inbuilt Django class? yes, change the first word to the name of the new app
     'users.apps.UsersConfig',
     'rest_framework',
+    'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +42,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication'
+    ]
+}
 
 AUTH_USER_MODEL = 'users.CustomUser' #By default, Django assumes you are going to have users on your site. The default model isn't useful so you want to make your own model. This part is to tell Django that you want to use your own authentication which you have to write.
 
