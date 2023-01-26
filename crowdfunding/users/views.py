@@ -50,15 +50,25 @@ class CustomUserDetail(APIView):
         if serializer.is_valid():
             serializer.save() 
             return Response(serializer.data)
-
-    # attempting to add DELETE for user detail
-    def destroy(self, pk, instance):
+    
+    def delete(self, request, pk):
         user = self.get_object(pk)
-        data = instance.data
-        serializer = CustomUserDetailSerializer(
-            instance = user,
-            data = data,
-            partial = True 
-        )
-        if serializer.is_valid():
-            return user().destroy(instance)
+        if pk == request.user.id:
+            user.delete()
+            return Response({"result":"user delete"})
+        return Response({"result":"user not auth"})
+
+
+# attempting to add DELETE for user detail
+# class CustomUserDelete(APIView):
+#     def get_object(self, pk): #pk is given in the FE from the user's URL
+#         try:
+#             return CustomUser.objects.get(pk=pk)
+#         except CustomUser.DoesNotExist:
+#             raise Http404
+
+#     def delete(self, request, *args, **kwargs):
+#         user=self.request.user
+#         user.delete()
+
+#         return Response({"result":"user delete"})

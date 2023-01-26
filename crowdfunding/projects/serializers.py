@@ -17,6 +17,8 @@ class PledgeSerializer(serializers.ModelSerializer):  #modelSerializer is progra
     def create(self, validated_data):
         return Pledge.objects.create(**validated_data)
 
+### insert something here for delete ??? 
+
 class ProjectSerializer(serializers.Serializer):
     id = serializers.ReadOnlyField()
     title = serializers.CharField(max_length=200)
@@ -24,8 +26,10 @@ class ProjectSerializer(serializers.Serializer):
     goal = serializers.IntegerField()
     image = serializers.URLField()
     is_open = serializers.BooleanField()
+    is_active=serializers.BooleanField(default=True)
     date_created = serializers.DateTimeField(read_only=True)
     owner = serializers.ReadOnlyField(source='owner.id')
+    #can add another field in model, serializer to make non-active instead of 'delete'. If wnat to maek it visible again, use a PUT request 
 
     def create(self, validated_data):
         return Project.objects.create(**validated_data) # ** is an unpacking syntax ie. if you recieve a dictionary, unpack the dictionary and hand each key value pair over as a key arguement
@@ -39,9 +43,32 @@ class ProjectDetailSerializer(ProjectSerializer):
         instance.goal = validated_data.get('goal', instance.goal)
         instance.image = validated_data.get('image', instance.image)
         instance.is_open = validated_data.get('is_open', instance.is_open)
+        instance.is_active=validated_data.get('is_active', instance.is_active)
         instance.date_created = validated_data.get('date_created', instance.date_created)
         instance.owner = validated_data.get('owner', instance.owner)
         instance.save()
         return instance 
 
-    
+
+class PledgeDetailSerializer(PledgeSerializer):  #modelSerializer is programmed to look at the fields in the model and match up what it has been asked to serialise from models.py   
+    # projects = ProjectDetailSerializer (many = False, read_only=True)
+
+    def update(self, instance, validated_data):
+        instance.amount = validated_data.get('amount', instance.amount)
+        instance.comment = validated_data.get('comment', instance.comment)
+        instance.anonymous = validated_data.get('anonymous', instance.anonymous)
+        instance.supporter = validated_data.get('supporter', instance.supporter)
+        instance.save()
+        return instance
+
+# ## attempting to use mixin-destroy class to delete a record in database
+# class DeletePledgeSerializer(serializers.ModelSerializer):  
+
+#     class Meta:
+#         model = Pledge
+#         fields = ['id', 'amount', 'comment', 'anonymous', 'project', 'supporter']
+
+#     def perform_destroy(self, validated_data):
+#         return Pledge.objects.delete(**validated_data)
+
+        

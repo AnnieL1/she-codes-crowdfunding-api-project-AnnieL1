@@ -30,5 +30,13 @@ class CustomUserDetailSerializer(CustomUserSerializer):
         instance.save()
         return instance 
 
-    # attempting to add DELETE for user detail
+
+# attempting to add DELETE for user detail
+# class CustomUserDeleteSerializer(CustomUserSerializer):
+    
+#     def update(self, instance, validated_data): 
+#         instance.username = validated_data.get('username', instance.username)
+#         instance.email = validated_data.get('email', instance.email)
+#         instance.delete()
+#         return instance 
 

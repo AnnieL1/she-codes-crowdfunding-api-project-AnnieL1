@@ -1,16 +1,23 @@
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
+from rest_framework.mixins import DestroyModelMixin
 from .models import Project, Pledge
-from .serializers import ProjectSerializer, ProjectDetailSerializer, PledgeSerializer
+from .serializers import ProjectSerializer, ProjectDetailSerializer, PledgeSerializer, PledgeDetailSerializer
 from django.http import Http404
 from .permissions import IsOwnerOrReadOnly
 
 # Create your views here.
 class ProjectList(APIView):
+
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
     def get(self, request):
-        projects = Project.objects.all()
+        # a. Use the line below if not filtering out inactive projects
+        # a. ## projects = Project.objects.all()
+
+        ## b. Use the line below when filtering for only active projects
+        projects = Project.objects.filter(is_active=True)
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
@@ -43,7 +50,7 @@ class ProjectDetail(APIView):
 
     def get(self, request, pk):
         project = self.get_object(pk)
-        serializer = ProjectSerializer(project)  # changed to ProjectSerializer from ProjectDetailSerializer. Why does it still work?
+        serializer = ProjectDetailSerializer(project)  # Use ProjectDetailSerializer instead of ProjectSerializer so that the pledges show!
         return Response(serializer.data)
 
     def put(self, request, pk):
@@ -58,6 +65,12 @@ class ProjectDetail(APIView):
             serializer.save() 
             return Response(serializer.data)
 
+    def delete(self, request, pk):
+        project = self.get_object(pk)
+        if project.owner == request.user:
+            project.delete()
+            return Response({"result":"project deleted"})
+        return Response({"result":"project not authorised to be deleted"})
 
 
 class PledgeList(generics.ListCreateAPIView):  #see Meta from serializer.py
@@ -67,6 +80,9 @@ class PledgeList(generics.ListCreateAPIView):  #see Meta from serializer.py
     def perform_create(self, serializer):
         serializer.save(supporter=self.request.user)
     
+    # def perform_destroy(self, serializer):
+        #serializer.delete(supporter=self.request.user)
+        
     ## all the code below this line and blocked out gets deleted because we have used the Meta method in serialize.py
     # def get(self, request):
     #     pledges = Pledge.objects.all()
@@ -85,3 +101,69 @@ class PledgeList(generics.ListCreateAPIView):  #see Meta from serializer.py
     #         serializer.errors,
     #         status=status.HTTP_400_BAD_REQUEST
     #     )
+
+class PledgeDetail(APIView):
+
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly        
+    ]
+
+    def get_object(self, pk):
+        try: #tells python what to do and will show the return statement if it works
+            pledge = Pledge.objects.get(pk=pk)
+            self.check_object_permissions(self.request, pledge)
+            return pledge
+        except Pledge.DoesNotExist: #native python language that gets released into the interpreter when something goes wrong
+            raise Http404
+
+    def get(self, request, pk):
+        pledge = self.get_object(pk)
+        serializer = PledgeDetailSerializer(pledge)  
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        pledge = self.get_object(pk)
+        data = request.data
+        serializer = PledgeDetailSerializer(
+            instance = pledge,
+            data = data,
+            partial = True 
+        )
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data)
+
+    def delete(self, request, pk):
+        pledge = self.get_object(pk)
+        if pledge.supporter == request.user:
+            pledge.delete()
+            return Response({"result":"pledge deleted"})
+        return Response({"result":"pledge not authorised to be deleted"})
+
+
+## attempting to use mixin-destroy class to delete a record in database
+
+# class DeletePledge(DestroyModelMixin, APIView):
+#     """
+#     Destroy a model instance.
+#     """
+#     permission_classes = [
+#         permissions.IsAuthenticatedOrReadOnly,
+#         IsOwnerOrReadOnly
+#     ]
+
+#     def get_object(self, pk):
+#         try: #tells python what to do and will show the return statement if it works
+#             pledge = Pledge.objects.get(pk=pk)
+#             self.check_object_permissions(self.request, pledge)
+#             return pledge
+#         except Pledge.DoesNotExist: #native python language that gets released into the interpreter when something goes wrong
+#             raise Http404
+
+#     def destroy(self, request, pk):
+#         pledge = self.get_object()
+#         if pledge.supporter == request.user:
+#             self.perform_destroy(pledge)
+#             return Response({"result":"pledge deleted"})
+#         return Response({"result":"pledge not authorised to be deleted"})
+
