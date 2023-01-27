@@ -1,5 +1,33 @@
 from rest_framework import serializers
-from .models import Project, Pledge
+from .models import Project, Pledge, StretchGoals
+
+class StretchGoalsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StretchGoals
+        # fields = ["parent", "pledger", "player", "sg_description", "trigger"]
+        # read_only_fields =["parent", "pledger", "player"] 
+        fields = ['id', 'project', 'gamer', 'sg_description', 'trigger']
+        read_only_fields = ['id', 'gamer']
+
+    # id = serializers.ReadOnlyField()
+    # project = serializers.ReadOnlyField()
+    # user = serializers.ReadOnlyField()
+    # sg_description = serializers.CharField ()
+    # trigger = serializers.IntegerField()
+
+    def create(self, validated_data):
+        return StretchGoals.objects.create(**validated_data)
+    
+
+class StretchGoalsDetailSerializer(StretchGoalsSerializer):
+    def update(self, instance,validated_data):
+        instance.project = validated_data.get('project', instance.project)
+        instance.gamer = validated_data.get('gamer', instance.gamer)
+        instance.sg_description = validated_data.get('sg_description', instance.sg_description)
+        instance.trigger = validated_data.get('trigger', instance.trigger)
+        instance.save
+        return instance
+
 
 class PledgeSerializer(serializers.ModelSerializer):  #modelSerializer is programmed to look at the fields in the model and match up what it has been asked to serialise from models.py   
 #if change to 'Meta' you also have to change, you also have to change views.py
@@ -74,4 +102,3 @@ class PledgeDetailSerializer(PledgeSerializer):  #modelSerializer is programmed 
 #     def perform_destroy(self, validated_data):
 #         return Pledge.objects.delete(**validated_data)
 
-        

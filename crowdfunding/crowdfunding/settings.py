@@ -68,8 +68,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ]
 }
-#session auth? CHECK THINKIFIC
-
 
 AUTH_USER_MODEL = 'users.CustomUser' #By default, Django assumes you are going to have users on your site. The default model isn't useful so you want to make your own model. This part is to tell Django that you want to use your own authentication which you have to write.
 

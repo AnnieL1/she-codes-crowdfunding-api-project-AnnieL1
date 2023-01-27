@@ -2,8 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.mixins import DestroyModelMixin
-from .models import Project, Pledge
-from .serializers import ProjectSerializer, ProjectDetailSerializer, PledgeSerializer, PledgeDetailSerializer
+from .models import Project, Pledge, StretchGoals
+from .serializers import ProjectSerializer, ProjectDetailSerializer, PledgeSerializer, PledgeDetailSerializer, StretchGoalsSerializer, StretchGoalsDetailSerializer
 from django.http import Http404
 from .permissions import IsOwnerOrReadOnly
 
@@ -175,3 +175,68 @@ class PledgeDetail(APIView):
 #             return Response({"result":"pledge deleted"})
 #         return Response({"result":"pledge not authorised to be deleted"})
 
+class StretchGoalsList(generics.ListCreateAPIView):
+
+    # permission_classes = [
+    #     permissions.IsAuthenticatedOrReadOnly       
+    # ]
+
+    def get(self, request):
+        # a. Use the line below if not filtering out inactive projects
+        stretchgoals = StretchGoals.objects.all()
+
+        ## b. Use the line below when filtering for only active projects
+        # projects = Project.objects.filter(is_active=True)
+        serializer = StretchGoalsSerializer(stretchgoals, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = StretchGoalsSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(gamer = request.user)
+            return Response(
+                serializer.data,
+                status = status.HTTP_201_CREATED
+            )
+        return Response(   #better to put a catch all return after the if statement, rather than using a else statement, just in case if statement is really long and complicated. Don't want to make it hard to read because people will miss it.
+            serializer.errors,
+            status = status.HTTP_400_BAD_REQUEST
+        )
+
+class StretchGoalsDetail(APIView):
+
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,     
+    ]  
+
+    def get_object(self, pk):
+        try: #tells python what to do and will show the return statement if it works
+            stretchgoals = StretchGoals.objects.get(pk=pk)
+            self.check_object_permissions(self.request, stretchgoals)
+            return stretchgoals
+        except stretchgoals.DoesNotExist: #native python language that gets released into the interpreter when something goes wrong
+            raise Http404
+
+    def get(self, request, pk):
+        stretchgoals = self.get_object(pk)
+        serializer = StretchGoalsDetailSerializer(stretchgoals)  
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        stretchgoals = self.get_object(pk)
+        data = request.data
+        serializer = StretchGoalsDetailSerializer(
+            instance = stretchgoals,
+            data = data,
+            partial = True 
+        )
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data)
+
+    def delete(self, request, pk):
+        stretchgoals = self.get_object(pk)
+        if stretchgoals.gamer == request.user:
+            stretchgoals.delete()
+            return Response({"result":"stretch goals deleted"})
+        return Response({"result":"stretch goals not authorised to be deleted"})

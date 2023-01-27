@@ -36,3 +36,22 @@ class Pledge(models.Model):
         on_delete=models.CASCADE,
         related_name='supporter_pledges'
     )
+
+
+class StretchGoals(models.Model):
+    sg_description = models.TextField()
+    trigger = models.IntegerField()
+    
+    project = models.ForeignKey(
+        'Project',
+        on_delete=models.CASCADE,
+        related_name = 'stretch_goal'
+    )
+
+    gamer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='player_pledge'
+    )
+
+    
