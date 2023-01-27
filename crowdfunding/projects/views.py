@@ -14,10 +14,10 @@ class ProjectList(APIView):
 
     def get(self, request):
         # a. Use the line below if not filtering out inactive projects
-        # a. ## projects = Project.objects.all()
+        projects = Project.objects.all()
 
         ## b. Use the line below when filtering for only active projects
-        projects = Project.objects.filter(is_active=True)
+        # projects = Project.objects.filter(is_active=True)
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
@@ -41,7 +41,10 @@ class ProjectDetail(APIView):
     ]
 
     def get_object(self, pk):
-        try: #tells python what to do and will show the return statement if it works
+        try: 
+            #tells python what to do and will show the return statement if it works
+            # canceling out to try is_active field. ####project = Project.objects.get(pk=pk)
+            # use the following field for the 'is_active' field 
             project = Project.objects.get(pk=pk)
             self.check_object_permissions(self.request, project)
             return project
@@ -74,6 +77,11 @@ class ProjectDetail(APIView):
 
 
 class PledgeList(generics.ListCreateAPIView):  #see Meta from serializer.py
+
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly       
+    ]
+
     queryset = Pledge.objects.all()
     serializer_class = PledgeSerializer
 
@@ -105,8 +113,8 @@ class PledgeList(generics.ListCreateAPIView):  #see Meta from serializer.py
 class PledgeDetail(APIView):
 
     permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly        
-    ]
+        permissions.IsAuthenticatedOrReadOnly,     
+    ]     
 
     def get_object(self, pk):
         try: #tells python what to do and will show the return statement if it works

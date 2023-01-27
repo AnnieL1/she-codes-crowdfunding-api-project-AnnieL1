@@ -29,7 +29,7 @@ class CustomUserList(generics.ListCreateAPIView):
 class CustomUserDetail(APIView):
     def get_object(self, pk): #pk is given in the FE from the user's URL
         try:
-            return CustomUser.objects.get(pk=pk)
+            return CustomUser.objects.get(pk=pk, is_active =True)
         except CustomUser.DoesNotExist:
             raise Http404
 
@@ -56,7 +56,7 @@ class CustomUserDetail(APIView):
         if pk == request.user.id:
             user.delete()
             return Response({"result":"user delete"})
-        return Response({"result":"user not auth"})
+        return Response({"result":"user not authorised"})
 
 
 # attempting to add DELETE for user detail
