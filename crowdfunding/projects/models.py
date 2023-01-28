@@ -10,7 +10,7 @@ class Project(models.Model):
     goal = models.IntegerField()
     image = models.URLField()  #hard to store in database because there's a lot of 0s and 1s, hence we're using a URL to redirect to image
     is_open = models.BooleanField()
-    # is_active = models.BooleanField()
+    is_active = models.BooleanField(default=True)
     date_created = models.DateTimeField(auto_now_add=True) #auto_now_add tells the backend to just auto record whatever time the command was run, rather than having to GET the time from the db and then POST the same time back to the DB
     ## owner=models.CharField(max_length=200) #need to change to Primary or Foriegn Key in future so the tables can talk to each other. The CharField class won't allow tables to talk to each other 
     owner = models.ForeignKey(

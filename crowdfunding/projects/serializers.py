@@ -55,7 +55,7 @@ class ProjectSerializer(serializers.Serializer):
     goal = serializers.IntegerField()
     image = serializers.URLField()
     is_open = serializers.BooleanField()
-    # is_active=serializers.BooleanField()
+    is_active=serializers.BooleanField()
     date_created = serializers.DateTimeField(read_only=True)
     owner = serializers.ReadOnlyField(source='owner.id')
     #can add another field in model, serializer to make non-active instead of 'delete'. If wnat to maek it visible again, use a PUT request 

@@ -5,7 +5,7 @@ from rest_framework import status, generics
 from .models import CustomUser
 from .serializer import CustomUserSerializer, CustomUserDetailSerializer
 
-class CustomUserList(generics.ListCreateAPIView):
+class CustomUserList(APIView):
     ## attempting class Meta
     # queryset = CustomUser.objects.all()
     # serializer_class = CustomUserSerializer
@@ -47,9 +47,11 @@ class CustomUserDetail(APIView):
             data = data,
             partial = True 
         )
-        if serializer.is_valid():
+
+        if pk == request.user.id & serializer.is_valid():
             serializer.save() 
             return Response(serializer.data)
+        return Response({"result":"user not authorised"})
     
     def delete(self, request, pk):
         user = self.get_object(pk)
