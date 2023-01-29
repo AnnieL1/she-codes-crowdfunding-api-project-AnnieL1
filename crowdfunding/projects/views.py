@@ -116,21 +116,21 @@ class PledgeDetail(APIView):
         permissions.IsAuthenticatedOrReadOnly,     
     ]     
 
-    def get_object(self, pk):
+    def get_object(self, pledge_pk):
         try: #tells python what to do and will show the return statement if it works
-            pledge = Pledge.objects.get(pk=pk)
+            pledge = Pledge.objects.get(pk=pledge_pk)
             self.check_object_permissions(self.request, pledge)
             return pledge
         except Pledge.DoesNotExist: #native python language that gets released into the interpreter when something goes wrong
             raise Http404
 
-    def get(self, request, project_pk, pledge_pk):
+    def get(self, request, pledge_pk):
         pledge = self.get_object(pledge_pk)
         serializer = PledgeDetailSerializer(pledge)  
         return Response(serializer.data)
 
-    def put(self, request, pk):
-        pledge = self.get_object(pk)
+    def put(self, request, pledge_pk):
+        pledge = self.get_object(pledge_pk)
         data = request.data
         serializer = PledgeDetailSerializer(
             instance = pledge,
@@ -141,8 +141,8 @@ class PledgeDetail(APIView):
             serializer.save() 
             return Response(serializer.data)
 
-    def delete(self, request, pk):
-        pledge = self.get_object(pk)
+    def delete(self, request, pledge_pk):
+        pledge = self.get_object(pledge_pk)
         if pledge.supporter == request.user:
             pledge.delete()
             return Response({"result":"pledge deleted"})
@@ -209,21 +209,24 @@ class StretchGoalsDetail(APIView):
         permissions.IsAuthenticatedOrReadOnly,     
     ]  
 
-    def get_object(self, pk):
+    def get_object(self, sg_pk):
         try: #tells python what to do and will show the return statement if it works
-            stretchgoals = StretchGoals.objects.get(pk=pk)
+            stretchgoals = StretchGoals.objects.get(pk=sg_pk)
             self.check_object_permissions(self.request, stretchgoals)
             return stretchgoals
         except stretchgoals.DoesNotExist: #native python language that gets released into the interpreter when something goes wrong
             raise Http404
 
-    def get(self, request, pk):
-        stretchgoals = self.get_object(pk)
-        serializer = StretchGoalsDetailSerializer(stretchgoals)  
-        return Response(serializer.data)
 
-    def put(self, request, pk):
-        stretchgoals = self.get_object(pk)
+    def get(self, request, sg_pk):
+        stretchgoals = self.get_object(sg_pk)
+        serializer = StretchGoalsDetailSerializer(stretchgoals)  
+        if serializer.is_valid():
+            return Response(serializer.data)
+        return Response({"stretch goal does not exist"})
+
+    def put(self, request, sg_pk):
+        stretchgoals = self.get_object(sg_pk)
         data = request.data
         serializer = StretchGoalsDetailSerializer(
             instance = stretchgoals,
@@ -234,9 +237,9 @@ class StretchGoalsDetail(APIView):
             serializer.save() 
             return Response(serializer.data)
 
-    def delete(self, request, pk):
-        stretchgoals = self.get_object(pk)
+    def delete(self, request, sg_pk):
+        stretchgoals = self.get_object(sg_pk)
         if stretchgoals.gamer == request.user:
             stretchgoals.delete()
-            return Response({"result":"stretch goals deleted"})
+            return Response({"result":"stretch goal deleted"})
         return Response({"result":"stretch goals not authorised to be deleted"})
