@@ -40,24 +40,24 @@ class ProjectDetail(APIView):
         IsOwnerOrReadOnly        
     ]
 
-    def get_object(self, pk):
+    def get_object(self, project_pk):
         try: 
             #tells python what to do and will show the return statement if it works
             # canceling out to try is_active field. ####project = Project.objects.get(pk=pk)
             # use the following field for the 'is_active' field 
-            project = Project.objects.get(pk=pk)
+            project = Project.objects.get(pk=project_pk)
             self.check_object_permissions(self.request, project)
             return project
         except Project.DoesNotExist: #native python language that gets released into the interpreter when something goes wrong
             raise Http404
 
-    def get(self, request, pk):
-        project = self.get_object(pk)
+    def get(self, request, project_pk):
+        project = self.get_object(project_pk)
         serializer = ProjectDetailSerializer(project)  # Use ProjectDetailSerializer instead of ProjectSerializer so that the pledges show!
         return Response(serializer.data)
 
-    def put(self, request, pk):
-        project = self.get_object(pk)
+    def put(self, request, project_pk):
+        project = self.get_object(project_pk)
         data = request.data
         serializer = ProjectDetailSerializer(
             instance = project,
@@ -68,8 +68,8 @@ class ProjectDetail(APIView):
             serializer.save() 
             return Response(serializer.data)
 
-    def delete(self, request, pk):
-        project = self.get_object(pk)
+    def delete(self, request, project_pk):
+        project = self.get_object(project_pk)
         if project.owner == request.user:
             project.delete()
             return Response({"result":"project deleted"})
@@ -85,7 +85,7 @@ class PledgeList(generics.ListCreateAPIView):  #see Meta from serializer.py
     queryset = Pledge.objects.all()
     serializer_class = PledgeSerializer
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer): #make one comment per user here
         serializer.save(supporter=self.request.user)
     
     # def perform_destroy(self, serializer):
@@ -97,7 +97,7 @@ class PledgeList(generics.ListCreateAPIView):  #see Meta from serializer.py
     #     serializer = PledgeSerializer(pledges, many=True)
     #     return Response(serializer.data)
 
-    # def post(self, request):
+    # def post(self, request):  #make one comment per user here
     #     serializer = PledgeSerializer(data=request.data)
     #     if serializer.is_valid():
     #         serializer.save()
@@ -124,8 +124,8 @@ class PledgeDetail(APIView):
         except Pledge.DoesNotExist: #native python language that gets released into the interpreter when something goes wrong
             raise Http404
 
-    def get(self, request, pk):
-        pledge = self.get_object(pk)
+    def get(self, request, project_pk, pledge_pk):
+        pledge = self.get_object(pledge_pk)
         serializer = PledgeDetailSerializer(pledge)  
         return Response(serializer.data)
 
