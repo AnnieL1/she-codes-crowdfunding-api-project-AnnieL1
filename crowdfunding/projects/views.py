@@ -238,6 +238,7 @@ class StretchGoalsDetail(APIView):
     ]  
 
     def get_object(self, sg_pk):
+        stretchgoals = None
         try: #tells python what to do and will show the return statement if it works
             stretchgoals = StretchGoals.objects.get(pk=sg_pk)
             self.check_object_permissions(self.request, stretchgoals)
