@@ -1,5 +1,6 @@
 from rest_framework import serializers 
 from .models import CustomUser
+from rest_framework.validators import UniqueValidator
 
 class CustomUserSerializer(serializers.Serializer):  # don't put pw here cos you never want pw to be pulled out of database
 
@@ -13,7 +14,13 @@ class CustomUserSerializer(serializers.Serializer):  # don't put pw here cos you
 
     # blocked out code below to try out class Meta
     id = serializers.ReadOnlyField()
-    username = serializers.CharField(max_length=200)
+    # username = serializers.CharField(max_length=200)
+    username = serializers.CharField(
+    validators=[
+        UniqueValidator(
+            queryset=CustomUser.objects.all(),
+            message=("Name already exists")
+        )])
     email = serializers.EmailField()
     password = serializers.CharField(write_only = True)
     is_active = serializers.BooleanField(default=True)
